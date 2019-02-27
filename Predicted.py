@@ -2,78 +2,81 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn import linear_model
+from sklearn import linear_model as lm
 import statsmodels.api as sm
 from sklearn.linear_model import LinearRegression
-
-data = pd.read_csv("/Users/cansuyuksel/Desktop/test_t.csv")
-
-data = data.dropna()
-
-data = pd.DataFrame({
-    "CustomerID": data["CustomerID"],
-    "Birthday": pd.DatetimeIndex(data['Birthday']).year,
-    "Gender": data.Gender.map(lambda x: 'Kadın' if x == True else 'Erkek'),
-    "City": data["CityName"],
-    "DegreeLevel": data["DegreeLevel"],
-    "SchoolName": data["SchoolName"],
-    "SalesDate": pd.DatetimeIndex(data['SalesDate']).year,
-    "PaymentType": data["PaymentType"],
-    "ProductName": data["ProductName"],
-    "SalesPrice": data["SalesPrice"],
-    "BaseName": data["BaseName"],
-    "SalesMail": data["SalesMail"]
-})
-
-df = pd.get_dummies(data, columns=['Birthday',
-                                   'Gender',
-                                   'City',
-                                   'DegreeLevel',
-                                   'SchoolName',
-                                   'PaymentType',
-                                   'ProductName',
-                                   'BaseName',
-                                   'SalesDate'])
-
-print(df)
-
-df.drop(['CustomerID', 'SalesMail'], axis=1, inplace=True)
-
-df.drop_duplicates(inplace=True)
-print(df)
-
-target = df['SalesPrice']
-inputs = df.drop('SalesPrice', axis=1)
-
-X = inputs
-
-Y = target
-
-lm = linear_model.LinearRegression()
-model = lm.fit(X, Y)
-
-
-predictions = lm.predict(X)
-
-
-y_true = target.fillna("ffill")
-y_pred = predictions
-
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 
-print(mean_absolute_error(y_true, y_pred))
-print(mean_squared_error(y_true, y_pred))
+def data_preprocessing(file_path):
+    data = pd.read_csv(file_path)
+    data.dropna()
+    data = pd.DataFrame({
+                        "CustomerID": data["CustomerID"],
+                        "Birthday": pd.DatetimeIndex(data['Birthday']).year,
+                        "Gender": data.Gender.map(lambda x: 'Kadın' if x == True else 'Erkek'),
+                        "City": data["CityName"],
+                        "DegreeLevel": data["DegreeLevel"],
+                        "SchoolName": data["SchoolName"],
+                        "SalesDate": pd.DatetimeIndex(data['SalesDate']).year,
+                        "PaymentType": data["PaymentType"],
+                        "ProductName": data["ProductName"],
+                        "SalesPrice": data["SalesPrice"],
+                        "BaseName": data["BaseName"],
+                        "SalesMail": data["SalesMail"]
+})
+    df = pd.get_dummies(data, columns=['Birthday',
+                                       'Gender',
+                                       'City',
+                                       'DegreeLevel',
+                                       'SchoolName',
+                                       'PaymentType',
+                                       'ProductName',
+                                       'BaseName',
+                                       'SalesDate'])
 
-newData = pd.DataFrame([{"Birthday": "1985",
-                         "Gender": "Erkek",
-                         "City": "ANKARA",
-                         "DegreeLevel": "Yüksek Lisans",
-                         "SchoolName": "Istanbul Teknik Üniversitesi",
-                         "SalesDate": "2017",
-                         "PaymentType": "HAVALE",
-                         "ProductName": "Proje Yönetimi ve PMP Sınavına Hazırlık",
-                         "BaseName": "Ankara"
+    df.drop(['CustomerID', 'SalesMail'], axis=1, inplace=True)
+    df.drop_duplicates(inplace=True)
+    return df
+
+
+def regression_model(data_frame):
+    target = data_frame['SalesPrice']
+    inputs = data_frame.drop('SalesPrice', axis=1)
+    X = inputs
+    Y = target
+    model = lm.LinearRegression()
+    result = model.fit(X, Y)
+    X = sm.add_constant(X)
+    model = sm.OLS(Y, X).fit()
+    predictions = model.predict(X)
+    y_true = target.fillna("ffill")
+    y_pred = predictions
+    return model.summary(), mean_absolute_error(y_true, y_pred), mean_squared_error(y_true, y_pred)
+
+print(regression_model(data_preprocessing("/Users/cansuyuksel/Desktop/test_t.csv")))
+
+
+
+birthday = input("Doğum yılınız: ")
+gender = input("Cinsiyetiniz: ")
+city = input("Doğum yeriniz: ")
+degree_level = input("Eğitim durumunuz: ")
+school_name = input("Mezun olduğunuz okul: ")
+sales_date = input("Satın alma yılı: ")
+payment_type = input("Ödeme şekliniz: ")
+product_type = input("Talep edilen ürünün adı: ")
+base_name = input("Bağlı olduğu merkez: ")
+
+newData = pd.DataFrame([{"Birthday": birthday,
+                         "Gender": gender,
+                         "City": city ,
+                         "DegreeLevel": degree_level,
+                         "SchoolName": school_name,
+                         "SalesDate": sales_date,
+                         "PaymentType": payment_type,
+                         "ProductName": product_type,
+                         "BaseName": base_name
                          }])
 
 print(newData)
@@ -97,7 +100,7 @@ def preprocess_input(input_df):
 def predict_price(ready_pred):
     new_input = ready_pred.iloc[-1]
     try:
-        lm.predict([new_input])
+        model.predict([new_input])
     except:
         print("Yeterli veri bulunmamaktadır.")
 
