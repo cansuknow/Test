@@ -78,7 +78,8 @@ newData = pd.DataFrame([{"Birthday": "1985",
 
 print(newData)
 
-df2 = pd.get_dummies(newData, columns=['Birthday',
+def preprocess_input(input_df):
+    df_pred = pd.get_dummies(input_df,columns=['Birthday',
                                        'Gender',
                                        'City',
                                        'DegreeLevel',
@@ -88,24 +89,13 @@ df2 = pd.get_dummies(newData, columns=['Birthday',
                                        'ProductName',
                                        'BaseName'
                                        ])
+    ready_pred = pd.concat([df,df_pred],ignore_index=True,sort=False).fillna(0)
+    ready_pred.drop("SalesPrice", axis=1, inplace=True)
+    return ready_pred
 
+def predict_price(ready_pred)
+    new_input = ready_pred.iloc[-1]
+    output = lm.predict([new_input])
+    print(output)
 
-print(df2)
-
-
-print(df2.info())
-
-result = pd.concat([df,df2],ignore_index=True, sort=False).fillna(0)
-result.drop("SalesPrice", axis=1, inplace=True)
-
-print(result["Birthday_1985"].tail())
-
-print(result.iloc[-1])
-
-new_X = result.iloc[-1]
-
-print(new_X)
-
-print(lm.predict([new_X]))
-
-
+predict_price(preprocess_input(newData))
