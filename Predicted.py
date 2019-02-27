@@ -93,9 +93,15 @@ def preprocess_input(input_df):
     ready_pred.drop("SalesPrice", axis=1, inplace=True)
     return ready_pred
 
-def predict_price(ready_pred)
-    new_input = ready_pred.iloc[-1]
-    output = lm.predict([new_input])
-    print(output)
 
-predict_price(preprocess_input(newData))
+def predict_price(ready_pred):
+    new_input = ready_pred.iloc[-1]
+    try:
+        lm.predict([new_input])
+    except:
+        print("Yeterli veri bulunmamaktadır.")
+
+    return lm.predict([new_input])
+
+
+print(predict_price(preprocess_input(newData)))
