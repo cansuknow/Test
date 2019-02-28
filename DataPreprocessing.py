@@ -5,7 +5,7 @@ from sklearn import linear_model
 import statsmodels.api as sm
 from sklearn.linear_model import LinearRegression
 
-data = pd.read_csv("/Users/cansuyuksel/Desktop/Test/test_t.csv")
+data = pd.read_csv("/Users/cansuyuksel/Desktop/test_t.csv")
 
 data = data.dropna()
 
@@ -48,18 +48,11 @@ X = inputs
 
 Y = target
 
-regr = linear_model.LinearRegression()
-regr.fit(X, Y)
+model = linear_model.LinearRegression()
+model.fit(X, Y)
 
-X = sm.add_constant(X)
-
-model = sm.OLS(Y, X).fit()
 predictions = model.predict(X)
-
-print_model = model.summary()
-print(print_model)
-
-y_true = target.fillna("ffill")
+y_true = target
 y_pred = predictions
 
 from sklearn.metrics import mean_absolute_error
@@ -91,13 +84,13 @@ df2 = pd.get_dummies(newData, columns=['Birthday',
                                        'ProductName',
                                        'BaseName'
                                        ])
-
-print(df2)
-
+df3 = df2.copy()
 newX = list(inputs.columns)
-
-for i in newX:
-    df2[i] = 0
-
-print(df2.head())
+for item in newX:
+    df3[item] = 0
+df3 = df3[inputs.columns]
+pred_df = pd.concat([df3,df2],ignore_index=True, sort=False).fillna(0)
+print(pred_df["Birthday_1985"].head())
+input_X = list(pred_df.iloc[1])
+print(model.predict([input_X]))
 
